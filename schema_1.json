@@ -1,0 +1,136 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "MicroEco-KG Interaction Event Schema",
+  "description": "淡水系统微生物相互作用知识图谱单元结构,基于 TRAES 五元组本体(Taxa - Relation - Attribute - Environment - Source)与事件中心型(Event-Centric)拓扑。",
+  "type": "object",
+  "required": ["event_id", "doi", "taxa_a", "taxa_b", "relation", "environment", "method"],
+  "properties": {
+    "event_id": {
+      "type": "string",
+      "description": "互作事件全局唯一语义 ID,生成规则:taxa_a 与 taxa_b 的物种学名按字母升序排序后与 relation 字段拼接,格式为 '物种A__关系__物种B'。",
+      "example": "Daphnia_magna__predation__Scenedesmus_obliquus"
+    },
+    "doi": {
+      "type": "string",
+      "description": "原始文献的 DOI 或唯一文件标识符,用于科学溯源。"
+    },
+    "taxa_a": {
+      "type": "object",
+      "description": "物种 A — 在非对称关系(捕食/寄生、偏利共生、偏害共生)中固定为主动方 / 获益方 / 伤害施加方。",
+      "required": ["name", "category", "rank"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "经清洗规范化后的物种学名,剔除发育阶段词、OCR 噪声、LaTeX 残留。"
+        },
+        "category": {
+          "type": "string",
+          "enum": ["真菌", "细菌", "古菌", "病毒", "藻类", "原生动物", "浮游动物", "浮游植物", "底栖动物", "其他"],
+          "description": "生物大类。"
+        },
+        "rank": {
+          "type": "string",
+          "enum": ["域", "界", "门", "纲", "目", "科", "属", "种", "亚种", "菌株", "未确定"],
+          "description": "分类学阶元。"
+        }
+      }
+    },
+    "taxa_b": {
+      "type": "object",
+      "description": "物种 B — 在非对称关系中固定为被动方 / 受害方 / 宿主。",
+      "required": ["name", "category", "rank"],
+      "properties": {
+        "name": {"type": "string"},
+        "category": {"type": "string"},
+        "rank": {"type": "string"}
+      }
+    },
+    "relation": {
+      "type": "string",
+      "enum": ["互利共生", "捕食/寄生", "竞争", "偏利共生", "偏害共生", "中性关系"],
+      "description": "六类闭集生态学标准关系术语。"
+    },
+    "environment": {
+      "type": "object",
+      "description": "互作发生时的环境上下文。原文未明确提及的字段统一为 '未提及'。",
+      "properties": {
+        "physical": {
+          "type": "string",
+          "description": "物理参数:温度、光照、水深、季节等。"
+        },
+        "chemical": {
+          "type": "string",
+          "description": "化学参数:N:P 比、氮源、溶解氧、pH、毒素浓度等。"
+        }
+      }
+    },
+    "method": {
+      "type": "string",
+      "description": "得出该互作结论所使用的实验或分析方法。"
+    },
+    "evidence_text": {
+      "type": "string",
+      "description": "原文中支撑该事件的简短证据片段,用于人工核验。"
+    },
+    "alignment": {
+      "type": "object",
+      "description": "多模态对齐字段 - Sci-Align 范式核心。schema 层面已完整定义,v0.1 阶段优先沉淀 TRAES 五元组,跨模态字符级关联在后续版本回填。",
+      "properties": {
+        "text_source": {
+          "type": "object",
+          "properties": {
+            "section": {"type": "string", "description": "原文章节,如 Results / Discussion"},
+            "char_span": {
+              "type": "array",
+              "items": {"type": "integer"},
+              "description": "Markdown 文件中的字符偏移区间 [start, end]"
+            }
+          }
+        },
+        "figure_alignment": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "figure_id": {"type": "string"},
+              "image_path": {"type": "string"},
+              "caption": {"type": "string"},
+              "vlm_description": {"type": "string", "description": "Qwen3.5-VL 生成的图像语义描述"}
+            }
+          }
+        },
+        "table_alignment": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "table_id": {"type": "string"},
+              "table_markdown": {"type": "string"},
+              "relevant_rows": {"type": "array", "items": {"type": "integer"}}
+            }
+          }
+        },
+        "formula_alignment": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "latex": {"type": "string"},
+              "natural_language": {"type": "string"}
+            }
+          }
+        }
+      }
+    },
+    "extraction_metadata": {
+      "type": "object",
+      "description": "抽取过程元信息,用于可复现性追踪。",
+      "properties": {
+        "extractor_model": {"type": "string", "example": "minimax-m2.7"},
+        "vlm_model": {"type": "string", "example": "qwen3.5-vl-122b-a10b"},
+        "extraction_timestamp": {"type": "string", "format": "date-time"},
+        "chunk_index": {"type": "integer"}
+      }
+    }
+  }
+}
