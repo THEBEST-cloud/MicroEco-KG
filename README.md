@@ -17,6 +17,8 @@
 
 > **代码即将开源。** 本项目的数据抽取与知识图谱构建代码正在整理中,将于近期完整开源,敬请关注。
 
+开源地址(持续更新): **https://github.com/THEBEST-cloud/MicroEco-KG**
+
 ## 许可协议
 
 本数据集采用 [Creative Commons Attribution 4.0 International (CC BY 4.0)](https://creativecommons.org/licenses/by/4.0/legalcode) 协议授权。
